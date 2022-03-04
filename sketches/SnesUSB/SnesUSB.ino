@@ -165,11 +165,10 @@ void loop() {
 
     //Only process data if state changed from previous read
     if(sc.stateChanged()) {
-      //Controller just connected. Also can happen when changing mode on 3d pad
+      //Controller just connected.
       if (sc.deviceJustChanged())
         resetJoyValues(i);
 
-      //const bool isAnalog = sc.getIsAnalog();
       uint8_t hatData = sc.hat();
 
       usbStick[i]->setButton(0, sc.digitalPressed(SNES_Y));
