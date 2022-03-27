@@ -12,15 +12,15 @@ It's been tested and confirmed to work with:
 |------------------|------------------------------------------|
 | SNES Digital Pad |                                          |
 | 8bitdo SN30 2.4G | If on multitap, only works on first port |
-| Super Multitap   | Only detected during                     |
-| Naki Tribal Tap  | Only detected during                     |
+| Super Multitap   | Only detected during boot                |
+| Naki Tribal Tap  | Only detected during boot                |
+| NES Digital Pad  | Requires simple adapter                  |
 
 
 Not tested but expected to work with:
 
 | Accessory       | Notes                 |
 |-----------------|-----------------------|
-| NES Digital Pad |                       |
 | SNES NTT Pad    |                       |
 
 
@@ -70,6 +70,16 @@ DATA2 and SELECT are only required for multitap use.
 | X      | 3   | &#9651; |
 | L      | 4   | L1      |
 | R      | 5   | R1      |
+| Select | 8   | Select  |
+| Start  | 9   | Start   |
+
+#### Nes button mapping
+
+| Snes   | HID | PS3     |
+|--------|-----|---------|
+| D-PAD  | HAT | D-PAD   |
+| B      | 1   | X       |
+| A      | 2   | O       |
 | Select | 8   | Select  |
 | Start  | 9   | Start   |
 

@@ -54,7 +54,7 @@ if(A == B) {\
 void printDeviceType (const SnesDeviceType_Enum d){
   DEVICE(d, SNES_DEVICE_NONE)
   DEVICE(d, SNES_DEVICE_NOTSUPPORTED)
-  //DEVICE(d, SNES_DEVICE_NES)
+  DEVICE(d, SNES_DEVICE_NES)
   DEVICE(d, SNES_DEVICE_PAD)
   DEVICE(d, SNES_DEVICE_NTT)
 }
