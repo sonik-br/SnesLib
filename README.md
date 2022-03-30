@@ -45,18 +45,30 @@ Then open any of the provided [sketches](sketches).
 
 | 1 2 3 4 | 5 6 7 )
 
-| Snes    | Description | Arduino |
-|---------|-------------|---------|
-| 1       | VCC/POWER   | 5V      |
-| 2       | CLOCK       | A3      |
-| 3       | LATCH       | A2      |
-| 4       | DATA1       | A1      |
-| 5       | DATA2       | A0      |
-| 6       | SELECT      | 14      |
-| 7       | GROUND      | GND     |
-
+| Snes | Description | Arduino |
+|------|-------------|---------|
+| 1    | VCC/POWER   | 5V      |
+| 2    | CLOCK       | A3      |
+| 3    | LATCH       | A2      |
+| 4    | DATA1       | A1      |
+| 5    | DATA2       | A0      |
+| 6    | SELECT      | 14      |
+| 7    | GROUND      | GND     |
 
 DATA2 and SELECT are only required for multitap use.
+
+### Nes port pins
+
+![pins on controller](docs/pins02.jpg)
+![pins on console](docs/pins03.jpg)
+
+| Nes | Description | Arduino |
+|-----|-------------|---------|
+| 1   | GROUND      | GND     |
+| 2   | CLOCK       | A3      |
+| 3   | LATCH       | A2      |
+| 4   | DATA1       | A1      |
+| 5   | VCC/POWER   | 5V      |
 
 
 #### Snes button mapping
