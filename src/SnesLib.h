@@ -20,12 +20,22 @@
 #ifndef SNESLIB_H_
 #define SNESLIB_H_
 
-#define SNES_ENABLE_MULTITAP
+
+//Enable SNES_ENABLE_MULTITAP or SNES_MULTI_CONNECTION. Don't enable both.
+//On SNES_MULTI_CONNECTION all controllers shares the same CLOCK and LATCH pins. And each controller have it's own DATA pin.
+//SNES_MULTI_CONNECTION can be set to 2, 3, or 4. If requiring more then must edit the lib.
+
+//#define SNES_ENABLE_MULTITAP
+//#define SNES_MULTI_CONNECTION 2
 
 #ifdef SNES_ENABLE_MULTITAP
-#define SNES_MAX_CTRL 4
+  #define SNES_MAX_CTRL 4
 #else
-#define SNES_MAX_CTRL 1
+  #ifdef SNES_MULTI_CONNECTION
+    #define SNES_MAX_CTRL SNES_MULTI_CONNECTION
+  #else
+    #define SNES_MAX_CTRL 1
+  #endif
 #endif
 
 enum SnesDeviceType_Enum {
@@ -115,10 +125,22 @@ class SnesController {
 };
 
 
-#ifdef SNES_ENABLE_MULTITAP
-template <uint8_t PIN_CLOCK, uint8_t PIN_LATCH, uint8_t PIN_DATA1, uint8_t PIN_DATA2, uint8_t PIN_SELECT>
+#ifdef SNES_ENABLE_MULTITAP //single port with multitap support
+  template <uint8_t PIN_CLOCK, uint8_t PIN_LATCH, uint8_t PIN_DATA1, uint8_t PIN_DATA2, uint8_t PIN_SELECT>
 #else
-template <uint8_t PIN_CLOCK, uint8_t PIN_LATCH, uint8_t PIN_DATA1>
+  #ifdef SNES_MULTI_CONNECTION //multiple port without multitap support
+    #if SNES_MULTI_CONNECTION == 2
+      template <uint8_t PIN_CLOCK, uint8_t PIN_LATCH, uint8_t PIN_DATA1, uint8_t PIN_DATA2>
+    #elif SNES_MULTI_CONNECTION == 3
+      template <uint8_t PIN_CLOCK, uint8_t PIN_LATCH, uint8_t PIN_DATA1, uint8_t PIN_DATA2, uint8_t PIN_DATA3>
+    #elif SNES_MULTI_CONNECTION == 4
+      template <uint8_t PIN_CLOCK, uint8_t PIN_LATCH, uint8_t PIN_DATA1, uint8_t PIN_DATA2, uint8_t PIN_DATA3, uint8_t PIN_DATA4>
+    #else
+      #error "Invalid value for SNES_MULTI_CONNECTION"
+    #endif
+  #else //single port without multitap support
+    template <uint8_t PIN_CLOCK, uint8_t PIN_LATCH, uint8_t PIN_DATA1>
+  #endif
 #endif
 
 class SnesPort {
@@ -130,6 +152,18 @@ class SnesPort {
     #ifdef SNES_ENABLE_MULTITAP
       DigitalPin<PIN_DATA2> SNES_DATA2;
       DigitalPin<PIN_SELECT> SNES_MULTITAP;
+    #else
+      #ifdef SNES_MULTI_CONNECTION
+        #if SNES_MULTI_CONNECTION > 1
+          DigitalPin<PIN_DATA2> SNES_DATA2;
+        #endif
+        #if SNES_MULTI_CONNECTION > 2
+          DigitalPin<PIN_DATA3> SNES_DATA3;
+        #endif
+        #if SNES_MULTI_CONNECTION > 3
+          DigitalPin<PIN_DATA4> SNES_DATA4;
+        #endif
+      #endif
     #endif
 
     uint8_t joyCount = 0;
@@ -188,7 +222,99 @@ class SnesPort {
         }
     }
 
+#ifdef SNES_MULTI_CONNECTION
+    void readSingleController() {
+      unsigned int fromController1 = 0x0;
+      unsigned int fromControllerExtended1 = 0x0;
 
+      #if SNES_MULTI_CONNECTION > 1
+        unsigned int fromController2 = 0x0;
+        unsigned int fromControllerExtended2 = 0x0;
+      #endif
+      #if SNES_MULTI_CONNECTION > 2
+        unsigned int fromController3 = 0x0;
+        unsigned int fromControllerExtended3 = 0x0;
+      #endif
+      #if SNES_MULTI_CONNECTION > 3
+        unsigned int fromController4 = 0x0;
+        unsigned int fromControllerExtended4 = 0x0;
+      #endif
+      
+      uint8_t i;
+      //uint8_t joyIndex = 0;
+      
+      //Do the strobe to start reading button values
+      //doStrobe();
+
+      for (i = 0; i < 16; i++) {
+        //read the value, shift it and store it as a bit on fromController:
+        fromController1 |= SNES_DATA1 << i;
+
+        #if SNES_MULTI_CONNECTION > 1
+          fromController2 |= SNES_DATA2 << i;
+        #endif
+        #if SNES_MULTI_CONNECTION > 2
+          fromController3 |= SNES_DATA3 << i;
+        #endif
+        #if SNES_MULTI_CONNECTION > 3
+          fromController4 |= SNES_DATA4 << i;
+        #endif
+
+        //More one cycle on the clock pin...
+        doClockCicle();
+      }
+
+      const uint8_t id1 = (fromController1 >> 12);
+      uint8_t extend = getExtendCount(id1);
+      
+      /*#if SNES_MULTI_CONNECTION == 2
+        const uint8_t id2 = (fromController2 >> 12);
+        extend = max(extend, getExtendCount(id2));
+      #endif*/
+      #if SNES_MULTI_CONNECTION > 1
+        const uint8_t id2 = (fromController2 >> 12);
+        extend = max(extend, getExtendCount(id2));
+      #endif
+      #if SNES_MULTI_CONNECTION > 2
+        const uint8_t id3 = (fromController3 >> 12);
+        extend = max(extend, getExtendCount(id3));
+      #endif
+      #if SNES_MULTI_CONNECTION > 3
+        const uint8_t id4 = (fromController4 >> 12);
+        extend = max(extend, getExtendCount(id4));
+      #endif
+      
+      for (i = 0; i < extend; i++) {
+        //read the value, shift it and store it as a bit on fromController:
+        fromControllerExtended1 |= SNES_DATA1 << i;
+
+        #if SNES_MULTI_CONNECTION > 1
+          fromControllerExtended2 |= SNES_DATA2 << i;
+        #endif
+        #if SNES_MULTI_CONNECTION > 2
+          fromControllerExtended3 |= SNES_DATA3 << i;
+        #endif
+        #if SNES_MULTI_CONNECTION > 3
+          fromControllerExtended4 |= SNES_DATA4 << i;
+        #endif
+
+        //More one cycle on the clock pin...
+        doClockCicle();
+      }
+
+      setControllerValues(id1, fromController1, fromControllerExtended1);
+
+      #if SNES_MULTI_CONNECTION > 1
+        setControllerValues(id2, fromController2, fromControllerExtended2);
+      #endif
+      #if SNES_MULTI_CONNECTION > 2
+        setControllerValues(id3, fromController3, fromControllerExtended3);
+      #endif
+      #if SNES_MULTI_CONNECTION > 3
+        setControllerValues(id4, fromController4, fromControllerExtended4);
+      #endif
+    }
+#else
     void readSingleController() {
       unsigned int fromController = 0x0;
       unsigned int fromControllerExtended = 0x0;
@@ -219,6 +345,7 @@ class SnesPort {
 
       setControllerValues(id1, fromController, fromControllerExtended);
     }
+#endif
 
     #ifdef SNES_ENABLE_MULTITAP
     void readMultitap() {
@@ -280,6 +407,16 @@ class SnesPort {
         SNES_MULTITAP.config(OUTPUT, HIGH);
         SNES_DATA2.config(INPUT, HIGH);
         detectMultiTap();
+      #else
+        #if SNES_MULTI_CONNECTION > 1
+          SNES_DATA2.config(INPUT, HIGH);
+        #endif
+        #if SNES_MULTI_CONNECTION > 2
+          SNES_DATA3.config(INPUT, HIGH);
+        #endif
+        #if SNES_MULTI_CONNECTION > 3
+          SNES_DATA4.config(INPUT, HIGH);
+        #endif
       #endif
     }
 
