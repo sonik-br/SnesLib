@@ -23,6 +23,18 @@
  * https://github.com/MHeironimus/ArduinoJoystickLibrary
 */
 
+/*******************************************************************************
+ * Multitap or Multiport config
+ * Comment both to use single port without multitap support.
+ * Define SNES_ENABLE_MULTITAP to use single port with multitap support.
+ * Define SNES_MULTI_CONNECTION to use multiple ports without multitap support.
+ * Don't define both. Multitap and MultiConnection will not work at the same time.
+ * SNES_MULTI_CONNECTION can be set to 2, 3, or 4.
+*/
+
+//#define SNES_ENABLE_MULTITAP
+//#define SNES_MULTI_CONNECTION 2
+
 #include <SnesLib.h>
 #include <Joystick.h>
 
@@ -32,15 +44,35 @@
 #define SNESPIN_CLOCK  A3
 #define SNESPIN_LATCH  A2
 #define SNESPIN_DATA1  A1
-#define SNESPIN_DATA2  A0
-#define SNESPIN_SELECT 14
 
-SnesPort<SNESPIN_CLOCK, SNESPIN_LATCH, SNESPIN_DATA1, SNESPIN_DATA2, SNESPIN_SELECT> snes;
-//to use less pins, also comment SNES_ENABLE_MULTITAP at SnesLib.h
-//SnesPort<SNESPIN_CLOCK, SNESPIN_LATCH, SNESPIN_DATA1> snes;
+#ifdef SNES_ENABLE_MULTITAP
+  #define SNESPIN_DATA2  A0 //DATA for the second controller
+  #define SNESPIN_SELECT 14
+#else //DATA pins for additional controllers
+  #define SNESPIN_DATA2  2
+  #define SNESPIN_DATA3  3
+  #define SNESPIN_DATA4  4
+#endif
 
-//Limit to 4 controllers.
-#define MAX_USB_STICKS 4
+
+#ifdef SNES_ENABLE_MULTITAP //single port with multitap support
+  SnesPort<SNESPIN_CLOCK, SNESPIN_LATCH, SNESPIN_DATA1, SNESPIN_DATA2, SNESPIN_SELECT> snes;
+#else
+  #ifdef SNES_MULTI_CONNECTION //multiple port without multitap support
+    #if SNES_MULTI_CONNECTION == 2
+      SnesPort<SNESPIN_CLOCK, SNESPIN_LATCH, SNESPIN_DATA1, SNESPIN_DATA2> snes;
+    #elif SNES_MULTI_CONNECTION == 3
+      SnesPort<SNESPIN_CLOCK, SNESPIN_LATCH, SNESPIN_DATA1, SNESPIN_DATA2, SNESPIN_DATA3> snes;
+    #elif SNES_MULTI_CONNECTION == 4
+      SnesPort<SNESPIN_CLOCK, SNESPIN_LATCH, SNESPIN_DATA1, SNESPIN_DATA2, SNESPIN_DATA3, SNESPIN_DATA4> snes;
+    #endif
+  #else //single port without multitap support
+    SnesPort<SNESPIN_CLOCK, SNESPIN_LATCH, SNESPIN_DATA1> snes;
+  #endif
+#endif
+
+//Limit to 4 controllers. Can also used SNES_MAX_CTRL that's auto defined in the lib.
+//#define MAX_USB_STICKS 4
 
 #define USB_BUTTON_COUNT 10
 
@@ -54,7 +86,7 @@ SnesPort<SNESPIN_CLOCK, SNESPIN_LATCH, SNESPIN_DATA1, SNESPIN_DATA2, SNESPIN_SEL
 #define debugln(...)
 #endif
 
-Joystick_* usbStick[MAX_USB_STICKS];
+Joystick_* usbStick[SNES_MAX_CTRL];
 
 uint8_t totalUsb = 1;
 uint16_t sleepTime = 500; //In micro seconds
@@ -102,10 +134,10 @@ void setup() {
   //Multitap is connected?
   const uint8_t tap = snes.getMultitapPorts();
   if (tap == 0){ //No multitap connected during boot
-    totalUsb = 1;
+    totalUsb = SNES_MAX_CTRL;
   }
-  else { //Multitap connected with 4 or 6 ports.
-    totalUsb = min(tap, MAX_USB_STICKS);
+  else { //Multitap connected
+    totalUsb = min(tap, SNES_MAX_CTRL);
     sleepTime = 1000; //use longer interval between reads for multitap
   }
 

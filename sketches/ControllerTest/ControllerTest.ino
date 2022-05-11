@@ -13,21 +13,53 @@
  * arduino with the correct number of pins and proper setup.
 */
 
+
+/*******************************************************************************
+ * Multitap or Multiport config
+ * Comment both to use single port without multitap support.
+ * Define SNES_ENABLE_MULTITAP to use single port with multitap support.
+ * Define SNES_MULTI_CONNECTION to use multiple ports without multitap support.
+ * Don't define both. Multitap and MultiConnection will not work at the same time.
+ * SNES_MULTI_CONNECTION can be set to 2, 3, or 4.
+*/
+
+//#define SNES_ENABLE_MULTITAP
+#define SNES_MULTI_CONNECTION 2
+
 #include <SnesLib.h>
 
-#define ENABLE_SERIAL_DEBUG
-
+//Snes pins
 #define SNESPIN_CLOCK  A3
 #define SNESPIN_LATCH  A2
-#define SNESPIN_DATA1  A1
-#define SNESPIN_DATA2  A0
-#define SNESPIN_SELECT 14
+#define SNESPIN_DATA1  A1 //DATA for the first controller
 
-SnesPort<SNESPIN_CLOCK, SNESPIN_LATCH, SNESPIN_DATA1, SNESPIN_DATA2, SNESPIN_SELECT> snes;
-//to use less pins, also comment SNES_ENABLE_MULTITAP at SnesLib.h
-//SnesPort<SNESPIN_CLOCK, SNESPIN_LATCH, SNESPIN_DATA1> snes;
+#ifdef SNES_ENABLE_MULTITAP
+  #define SNESPIN_DATA2  A0 //DATA for the second controller
+  #define SNESPIN_SELECT 14
+#else //DATA pins for additional controllers
+  #define SNESPIN_DATA2  2
+  #define SNESPIN_DATA3  3
+  #define SNESPIN_DATA4  4
+#endif
 
 #define ENABLE_SERIAL_DEBUG
+
+#ifdef SNES_ENABLE_MULTITAP //single port with multitap support
+  SnesPort<SNESPIN_CLOCK, SNESPIN_LATCH, SNESPIN_DATA1, SNESPIN_DATA2, SNESPIN_SELECT> snes;
+#else
+  #ifdef SNES_MULTI_CONNECTION //multiple port without multitap support
+    #if SNES_MULTI_CONNECTION == 2
+      SnesPort<SNESPIN_CLOCK, SNESPIN_LATCH, SNESPIN_DATA1, SNESPIN_DATA2> snes;
+    #elif SNES_MULTI_CONNECTION == 3
+      SnesPort<SNESPIN_CLOCK, SNESPIN_LATCH, SNESPIN_DATA1, SNESPIN_DATA2, SNESPIN_DATA3> snes;
+    #elif SNES_MULTI_CONNECTION == 4
+      SnesPort<SNESPIN_CLOCK, SNESPIN_LATCH, SNESPIN_DATA1, SNESPIN_DATA2, SNESPIN_DATA3, SNESPIN_DATA4> snes;
+    #endif
+  #else //single port without multitap support
+    SnesPort<SNESPIN_CLOCK, SNESPIN_LATCH, SNESPIN_DATA1> snes;
+  #endif
+#endif
+
 
 #ifdef ENABLE_SERIAL_DEBUG
 #define dstart(spd) do {Serial.begin (spd); while (!Serial) {digitalWrite (LED_BUILTIN, (millis () / 500) % 2);}} while (0);
