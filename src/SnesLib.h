@@ -9,8 +9,8 @@
  * https://github.com/SukkoPera/DigitalIO
  * 
  * 
- * Works with common snes pad and multitap.
- * Not tested with NES pad and NTT pad but should work.
+ * Works with common snes pad, ntt pad and multitap.
+ * Also works with common NES pad.
  * DO NOT connect lightguns and other unsuported controllers
  * Multitap is detected only when powering the arduino.
 */
@@ -61,12 +61,31 @@ enum SnesDigital_Enum {
   SNES_R      = 0x0800
 };
 
-struct ControllerState {
+enum SnesDigitalNTT_Enum {
+    SNES_NTT_0 = 0x0001,
+    SNES_NTT_1 = 0x0002,
+    SNES_NTT_2 = 0x0004,
+    SNES_NTT_3 = 0x0008,
+    SNES_NTT_4 = 0x0010,
+    SNES_NTT_5 = 0x0020,
+    SNES_NTT_6 = 0x0040,
+    SNES_NTT_7 = 0x0080,
+    SNES_NTT_8 = 0x0100,
+    SNES_NTT_9 = 0x0200,
+    SNES_NTT_STAR = 0x0400,
+    SNES_NTT_HASH = 0x0800,
+    SNES_NTT_DOT = 0x1000,
+    SNES_NTT_C = 0x2000,
+    SNES_NTT_UNK = 0x4000, //NOT USED
+    SNES_NTT_EQUAL = 0x8000
+};
+
+struct SnesControllerState {
   uint8_t id = SNES_DEVICE_NONE;
   uint16_t digital = 0x0; //Dpad and common buttons
   uint16_t extended = 0x0; //Extended data
 
-  bool operator!=(const ControllerState& b) const {
+  bool operator!=(const SnesControllerState& b) const {
     return id != b.id ||
          digital != b.digital ||
          extended != b.extended;
@@ -76,8 +95,8 @@ struct ControllerState {
 class SnesController {
   public:
         
-    ControllerState currentState;
-    ControllerState lastState;
+      SnesControllerState currentState;
+      SnesControllerState lastState;
 
     void reset(const bool resetId = false, bool resetPrevious = false) {
       if (resetId)
@@ -108,10 +127,15 @@ class SnesController {
     bool digitalJustPressed (const SnesDigital_Enum s) const { return digitalChanged(s) & digitalPressed(s); }
     bool digitalJustReleased (const SnesDigital_Enum s) const { return digitalChanged(s) & !digitalPressed(s); }
     
+    bool nttPressed(const SnesDigitalNTT_Enum s) const { return (currentState.extended & s) != 0; }
+    bool nttChanged(const SnesDigitalNTT_Enum s) const { return ((lastState.extended ^ currentState.extended) & s) > 0; }
+    bool nttJustPressed(const SnesDigitalNTT_Enum s) const { return nttChanged(s) & nttPressed(s); }
+    bool nttJustReleased(const SnesDigitalNTT_Enum s) const { return nttChanged(s) & !nttPressed(s); }
+
     SnesDeviceType_Enum deviceType() const {
       if (currentState.id == 0xF) {
         return SNES_DEVICE_PAD;
-      } else if (currentState.id == 0xB) {
+      } else if (currentState.id == 0xD) {
         return SNES_DEVICE_NTT;
       } else if (currentState.id == 0x0) {
         if (currentState.digital && 0xFF == 0xFF) //on NES controller ID is 0x0 and the non-existing buttons are pressed
@@ -204,7 +228,7 @@ class SnesPort {
 
     inline uint8_t __attribute__((always_inline))
     getExtendCount(const uint8_t id1) const {
-      if (id1 == 0xB) //NTT PAD
+      if (id1 == 0xD) //NTT PAD
         return 16;
       else
         return 1;

@@ -24,7 +24,7 @@
 */
 
 //#define SNES_ENABLE_MULTITAP
-#define SNES_MULTI_CONNECTION 2
+//#define SNES_MULTI_CONNECTION 2
 
 #include <SnesLib.h>
 
@@ -78,6 +78,13 @@ if(sc.digitalJustPressed(D)) { \
   debugln(F("Digital released: " #D)); \
 }
 
+#define DIGITALSTATE_NTT(D) \
+if(sc.nttJustPressed(D)) { \
+  debugln(F("NTT pressed: " #D)); \
+} else if(sc.nttJustReleased(D)) {\
+  debugln(F("NTT released: " #D)); \
+}
+
 #define DEVICE(A, B) \
 if(A == B) {\
   debug(#B); \
@@ -104,6 +111,21 @@ void printButtons(const SnesController& sc) {
   DIGITALSTATE(SNES_X)
   DIGITALSTATE(SNES_L)
   DIGITALSTATE(SNES_R)
+  DIGITALSTATE_NTT(SNES_NTT_0)
+  DIGITALSTATE_NTT(SNES_NTT_1)
+  DIGITALSTATE_NTT(SNES_NTT_2)
+  DIGITALSTATE_NTT(SNES_NTT_3)
+  DIGITALSTATE_NTT(SNES_NTT_4)
+  DIGITALSTATE_NTT(SNES_NTT_5)
+  DIGITALSTATE_NTT(SNES_NTT_6)
+  DIGITALSTATE_NTT(SNES_NTT_7)
+  DIGITALSTATE_NTT(SNES_NTT_8)
+  DIGITALSTATE_NTT(SNES_NTT_9)
+  DIGITALSTATE_NTT(SNES_NTT_STAR)
+  DIGITALSTATE_NTT(SNES_NTT_HASH)
+  DIGITALSTATE_NTT(SNES_NTT_DOT)
+  DIGITALSTATE_NTT(SNES_NTT_C)
+  DIGITALSTATE_NTT(SNES_NTT_EQUAL)
 }
 
 void setup() {
@@ -166,14 +188,15 @@ void loop() {
         printDeviceType(dtype[i]);
         debugln(F(""));
 
-        if (dtype[i] == SNES_DEVICE_NTT) {
-          debugln(F("NTT DATA"));
-          debugln(sc.extendedRaw(), BIN);
-        }
+        //if (dtype[i] == SNES_DEVICE_NTT) {
+        //  debugln(F("NTT DATA"));
+        //  debugln(sc.extendedRaw(), BIN);
+        //}
         
       }
 
       //bool isPressed = sc.digitalPressed(SNES_B);
+      //bool isPressed = sc.nttPressed(SNES_NTT_C);
       
       printButtons(sc);
     }

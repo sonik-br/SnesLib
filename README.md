@@ -12,16 +12,10 @@ It's been tested and confirmed to work with:
 |------------------|------------------------------------------|
 | SNES Digital Pad |                                          |
 | 8bitdo SN30 2.4G | If on multitap, only works on first port |
+| NTT Data Pad     |                                          |
 | Super Multitap   | Only detected during boot                |
 | Naki Tribal Tap  | Only detected during boot                |
 | NES Digital Pad  | Requires simple adapter                  |
-
-
-Not tested but expected to work with:
-
-| Accessory       | Notes                 |
-|-----------------|-----------------------|
-| SNES NTT Pad    |                       |
 
 
 ## How to use
@@ -97,7 +91,7 @@ DATA2 and SELECT are only required for multitap use.
 
 ## Credits
 
-My friend Rafael lending me the multitap to test my code.
+My friend Rafael for lending me the multitap and the nes adapter.
 
 NOCASH's [fullsnes](http://problemkaputt.de/fullsnes.htm) docs.
 
