@@ -95,8 +95,8 @@ struct SnesControllerState {
 class SnesController {
   public:
         
-      SnesControllerState currentState;
-      SnesControllerState lastState;
+    SnesControllerState currentState;
+    SnesControllerState lastState;
 
     void reset(const bool resetId = false, bool resetPrevious = false) {
       if (resetId)
@@ -116,7 +116,10 @@ class SnesController {
       lastState.extended = currentState.extended;
     }
 
-    bool deviceJustChanged() const { return currentState.id != lastState.id; }
+    bool deviceJustChanged() const {
+        return (currentState.id != lastState.id) || (currentState.id == 0x0 && ((currentState.digital >> 8 & 0xF) == 0xF) && ((lastState.digital >> 8 & 0xF) != 0xF));
+    }
+
     bool stateChanged() const { return currentState != lastState; }
     uint16_t digitalRaw() const { return currentState.digital; }
     uint16_t extendedRaw() const { return currentState.extended; }
@@ -138,7 +141,7 @@ class SnesController {
       } else if (currentState.id == 0xD) {
         return SNES_DEVICE_NTT;
       } else if (currentState.id == 0x0) {
-        if (currentState.digital && 0xFF == 0xFF) //on NES controller ID is 0x0 and the non-existing buttons are pressed
+        if ((currentState.digital >> 8 & 0xF) == 0xF) //on NES controller ID is 0x0 and the non-existing buttons are pressed
           return SNES_DEVICE_NES;
         else
           return SNES_DEVICE_NONE;
