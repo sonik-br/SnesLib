@@ -16,6 +16,7 @@ It's been tested and confirmed to work with:
 | Super Multitap   | Only detected during boot                |
 | Naki Tribal Tap  | Only detected during boot                |
 | NES Digital Pad  | Requires simple adapter                  |
+| VirtualBoy Pad   | Requires simple adapter                  |
 
 
 ## How to use
@@ -95,7 +96,9 @@ My friend Rafael for lending me the multitap and the nes adapter.
 
 NOCASH's [fullsnes](http://problemkaputt.de/fullsnes.htm) docs.
 
-Darthcloud's [Blue Retro](https://hackaday.io/project/170365-blueretro/log/181686-2020-08-04-progress-update-sfcsnes-support) docs
+Darthcloud's [Blue Retro](https://hackaday.io/project/170365-blueretro/log/181686-2020-08-04-progress-update-sfcsnes-support) docs.
+
+[NesDev](https://www.nesdev.org/wiki/Input_devices) docs.
 
 It uses the [DigitalIO](https://github.com/greiman/DigitalIO) from greiman.
 
